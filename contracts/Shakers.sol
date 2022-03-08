@@ -9,9 +9,9 @@ contract Shaker is ERC721, Ownable {
     uint256 constant MAX_SHAKERS = 1;
     uint256 ids = 0;
 
-    uint32 type1Free;
-    uint32 type2Free;
-    uint32 type3Free;
+    uint32 public type1Free;
+    uint32 public type2Free;
+    uint32 public type3Free;
 
     // Pack values in a 32 bit structure
     struct Shaker {
@@ -21,6 +21,7 @@ contract Shaker is ERC721, Ownable {
     }
 
     mapping(address => Shaker) private _shakers;
+    mapping(address => uint32) private _avatars;
     mapping(bytes32 => string) private _metadata;
 
     constructor(
@@ -42,12 +43,13 @@ contract Shaker is ERC721, Ownable {
     }
 
     function mintShaker(uint32 shakerType) external payable {
-       address sender = _msgSender();
-       require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
-       safeMint(sender, ids);
-    }
+        require(shakerType <= 3 && shakerType >= 1, "Invalid shaker type");
 
-    function safeMint(address sender, uint32 shakerType) internal payable {
+        address sender = _msgSender();
+        console.log("Minting for ", sender);
+
+        require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
+
         _safeMint(sender, ids);
 
         if (msg.value == 0){
@@ -56,11 +58,11 @@ contract Shaker is ERC721, Ownable {
                 type1Free -= 1;
             }
             if (shakerType == 2){
-                require(type1Free > 0, "No more type two free");
+                require(type2Free > 0, "No more type two free");
                 type2Free -= 1;
             }
             if (shakerType == 3){
-                require(type1Free > 0, "No more type three free");
+                require(type3Free > 0, "No more type three free");
                 type3Free -= 1;
             }
         } else {
@@ -72,10 +74,8 @@ contract Shaker is ERC721, Ownable {
                 require(msg.value > 0.06 ether, "Insuficient funds");
         }
         _shakers[sender] = primitiveShaker();
-
+        _avatars[sender] = shakerType;
         ids += 1;
-
-        
     }
 
     function tokenURI() public view returns (string memory) {
@@ -114,9 +114,12 @@ contract Shaker is ERC721, Ownable {
     function setShakerMetadataLink(
         uint16 _level, uint8 _civilization, uint8 _stage, string calldata _link
     ) external onlyOwner {
-        require(keccak256(abi.encode(_link)) != keccak256(abi.encode("")), "Link cannot be empty");
-        bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
+        require(
+            keccak256(abi.encode(_link)) != keccak256(abi.encode("")),
+            "Link cannot be empty"
+        );
 
+        bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
        _metadata[shakerHash] = _link;
     }
 
