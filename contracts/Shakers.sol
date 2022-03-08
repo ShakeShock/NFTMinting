@@ -3,10 +3,15 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
-contract ShakerNFT is ERC721, Ownable {
-    uint constant MAX_SHAKERS = 1;
-    uint ids = 0;
+contract Shaker is ERC721, Ownable {
+    uint256 constant MAX_SHAKERS = 1;
+    uint256 ids = 0;
+
+    uint32 type1Free;
+    uint32 type2Free;
+    uint32 type3Free;
 
     // Pack values in a 32 bit structure
     struct Shaker {
@@ -22,23 +27,55 @@ contract ShakerNFT is ERC721, Ownable {
         uint16[] memory _level,
         uint8[] memory _civilization,
         uint8[] memory _stage,
-        string[] memory _links
+        string[] memory _links,
+        uint32 maxFreeMinting
     )  ERC721("Shaker", "SKR") {
         // Set IPFS location for each shaker type
+        type1Free = maxFreeMinting * 70 / 100;
+        type2Free = maxFreeMinting * 20 / 100;
+        type3Free = maxFreeMinting * 10 / 100;
+
         for (uint i = 0; i < _level.length; i++){
             bytes32 shakerHash = getShakerHash(_level[i], _civilization[i], _stage[i]);
             _metadata[shakerHash] = _links[i];
         }
     }
 
-    function mintShaker() external payable {
+    function mintShaker(uint32 shakerType) external payable {
        address sender = _msgSender();
        require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
+       safeMint(sender, ids);
+    }
 
-       _safeMint(sender, ids);
+    function safeMint(address sender, uint32 shakerType) internal payable {
+        _safeMint(sender, ids);
 
-       _shakers[sender] = primitiveShaker();
-       ids += 1;
+        if (msg.value == 0){
+            if (shakerType == 1){
+                require(type1Free > 0, "No more type one free");
+                type1Free -= 1;
+            }
+            if (shakerType == 2){
+                require(type1Free > 0, "No more type two free");
+                type2Free -= 1;
+            }
+            if (shakerType == 3){
+                require(type1Free > 0, "No more type three free");
+                type3Free -= 1;
+            }
+        } else {
+            if (shakerType == 1)
+                require(msg.value > 0.015 ether, "Insuficient funds");
+            if (shakerType == 2)
+                require(msg.value > 0.03 ether, "Insuficient funds");
+            if (shakerType == 3)
+                require(msg.value > 0.06 ether, "Insuficient funds");
+        }
+        _shakers[sender] = primitiveShaker();
+
+        ids += 1;
+
+        
     }
 
     function tokenURI() public view returns (string memory) {
@@ -50,7 +87,7 @@ contract ShakerNFT is ERC721, Ownable {
         return string(abi.encodePacked(_baseURI(), getShakerMetadataLink(playerShaker)));
     }
 
-    function getShakerMetadataLink(Shaker memory s) public view returns (string memory) {
+    function getShakerMetadataLink(Shaker memory s) internal view returns (string memory) {
         return getShakerMetadataLink(s.level, s.civilization, s.stage);
     }
 
