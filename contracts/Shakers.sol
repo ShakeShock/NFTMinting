@@ -18,8 +18,17 @@ contract ShakerNFT is ERC721, Ownable {
     mapping(address => Shaker) private _shakers;
     mapping(bytes32 => string) private _metadata;
 
-    constructor()  ERC721("Shaker", "SKR") {
+    constructor(
+        uint16[] memory _level,
+        uint8[] memory _civilization,
+        uint8[] memory _stage,
+        string[] memory _links
+    )  ERC721("Shaker", "SKR") {
         // Set IPFS location for each shaker type
+        for (uint i = 0; i < _level.length; i++){
+            bytes32 shakerHash = getShakerHash(_level[i], _civilization[i], _stage[i]);
+            _metadata[shakerHash] = _links[i];
+        }
     }
 
     function mintShaker(uint _characterIndex) external {
