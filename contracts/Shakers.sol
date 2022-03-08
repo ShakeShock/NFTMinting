@@ -31,7 +31,7 @@ contract ShakerNFT is ERC721, Ownable {
         }
     }
 
-    function mintShaker(uint _characterIndex) external {
+    function mintShaker(uint _characterIndex) external payable {
         // Need to fix minting, how this contract mapping
         // plays along with oppenzeppelin's
 
@@ -44,16 +44,20 @@ contract ShakerNFT is ERC721, Ownable {
        ids += 1;
     }
 
-    function getPlayerShakerMetata() public view returns (string memory) {
+    function tokenURI() public view override returns (string memory) {
         address sender = _msgSender();
         require(balanceOf(sender) == 1, "Player does not own a Shaker");
 
         Shaker memory playerShaker = _shakers[sender];
 
-        return getShakerMetada(playerShaker.level, playerShaker.civilization, playerShaker.stage);
+        return string(abi.encodePacked(_baseUri(), getShakerMetadataLink(playerShaker)));
     }
 
-    function getShakerMetada(
+    function getShakerMetadataLink(Shaker s) public view returns (string memory) {
+        return getShakerMetadataLink(s.leve, s.civilization, s.stage);
+    }
+
+    function getShakerMetadataLink(
         uint16 _level, uint8 _civilization, uint8 _stage
     ) public view returns (string memory) {
         bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
@@ -70,13 +74,30 @@ contract ShakerNFT is ERC721, Ownable {
         return keccak256(abi.encodePacked(_level, _civilization, _stage));
     }
 
-    function setShakerMetadata(
+    function setShakerMetadataLink(
         uint16 _level, uint8 _civilization, uint8 _stage, string calldata _link
     ) external onlyOwner {
         require(link != "", "Link cannot be empty");
         bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
 
        _metadata[shakerHash] = _link;
+    }
+
+    // Increase shaker level, which means it has a new link in ipfs
+    // If invalid level revert
+    function levelUpShaker();
+
+    // Change Shaker civilization, (new ipfs link)
+    // If cannot change, revert
+    function changeShakerCivilization();
+
+
+    // Upgrade stage, (new ipfs link)
+    // If cannot further advance then revert
+    function increaseShakerStage();
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "ipfs://";
     }
 
     function primitiveShaker() public pure returns(Shaker memory){
