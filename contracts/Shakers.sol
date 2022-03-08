@@ -31,10 +31,7 @@ contract ShakerNFT is ERC721, Ownable {
         }
     }
 
-    function mintShaker(uint _characterIndex) external payable {
-        // Need to fix minting, how this contract mapping
-        // plays along with oppenzeppelin's
-
+    function mintShaker() external payable {
        address sender = _msgSender();
        require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
 
@@ -44,17 +41,17 @@ contract ShakerNFT is ERC721, Ownable {
        ids += 1;
     }
 
-    function tokenURI() public view override returns (string memory) {
+    function tokenURI() public view returns (string memory) {
         address sender = _msgSender();
         require(balanceOf(sender) == 1, "Player does not own a Shaker");
 
         Shaker memory playerShaker = _shakers[sender];
 
-        return string(abi.encodePacked(_baseUri(), getShakerMetadataLink(playerShaker)));
+        return string(abi.encodePacked(_baseURI(), getShakerMetadataLink(playerShaker)));
     }
 
-    function getShakerMetadataLink(Shaker s) public view returns (string memory) {
-        return getShakerMetadataLink(s.leve, s.civilization, s.stage);
+    function getShakerMetadataLink(Shaker memory s) public view returns (string memory) {
+        return getShakerMetadataLink(s.level, s.civilization, s.stage);
     }
 
     function getShakerMetadataLink(
@@ -63,7 +60,10 @@ contract ShakerNFT is ERC721, Ownable {
         bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
         
         // Need to verifiy if that combination does exists!
-        require (_metadata[shakerHash] != "", "Not valid combination of Shaker properties");
+        require (
+            keccak256(abi.encode(_metadata[shakerHash])) != keccak256(abi.encode("")),
+            "Not valid combination of Shaker properties"
+        );
 
         return _metadata[shakerHash];
     }
@@ -77,7 +77,7 @@ contract ShakerNFT is ERC721, Ownable {
     function setShakerMetadataLink(
         uint16 _level, uint8 _civilization, uint8 _stage, string calldata _link
     ) external onlyOwner {
-        require(link != "", "Link cannot be empty");
+        require(keccak256(abi.encode(_link)) != keccak256(abi.encode("")), "Link cannot be empty");
         bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
 
        _metadata[shakerHash] = _link;
@@ -85,16 +85,16 @@ contract ShakerNFT is ERC721, Ownable {
 
     // Increase shaker level, which means it has a new link in ipfs
     // If invalid level revert
-    function levelUpShaker();
+    function levelUpShaker() external {}
 
     // Change Shaker civilization, (new ipfs link)
     // If cannot change, revert
-    function changeShakerCivilization();
+    function changeShakerCivilization() private {}
 
 
     // Upgrade stage, (new ipfs link)
     // If cannot further advance then revert
-    function increaseShakerStage();
+    function increaseShakerStage() private {}
 
     function _baseURI() internal pure override returns (string memory) {
         return "ipfs://";
