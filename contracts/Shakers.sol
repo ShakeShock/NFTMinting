@@ -38,8 +38,7 @@ contract ShakerNFT is ERC721, Ownable {
        address sender = _msgSender();
        require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
 
-       uint newShakerId = ids;
-       _safeMint(sender, newShakerId);
+       _safeMint(sender, ids);
 
        _shakers[sender] = primitiveShaker();
        ids += 1;
@@ -47,7 +46,7 @@ contract ShakerNFT is ERC721, Ownable {
 
     function getPlayerShakerMetata() public view returns (string memory) {
         address sender = _msgSender();
-        require(balanceOf(sender) == 1, "Player does not own a shaker");
+        require(balanceOf(sender) == 1, "Player does not own a Shaker");
 
         Shaker memory playerShaker = _shakers[sender];
 
@@ -58,9 +57,10 @@ contract ShakerNFT is ERC721, Ownable {
         uint16 _level, uint8 _civilization, uint8 _stage
     ) public view returns (string memory) {
         bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
-
-        // Need to verifiy if that combination does exists!
         
+        // Need to verifiy if that combination does exists!
+        require (_metadata[shakerHash] != "", "Not valid combination of Shaker properties");
+
         return _metadata[shakerHash];
     }
 
@@ -73,9 +73,9 @@ contract ShakerNFT is ERC721, Ownable {
     function setShakerMetadata(
         uint16 _level, uint8 _civilization, uint8 _stage, string calldata _link
     ) external onlyOwner {
-       bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
+        require(link != "", "Link cannot be empty");
+        bytes32 shakerHash = getShakerHash(_level, _civilization, _stage);
 
-        // Is this stored on the blockchain?
        _metadata[shakerHash] = _link;
     }
 
