@@ -14,9 +14,9 @@ It has the properties:
 
 - `level` a `uint16` which represents character level (from 0 to 3)
 - `civilization` a `uint8` which represents the civilization it belongs
-- `stage` a `uint8` which represents current civilization
+- `stage` a `uint8` which represents current time epoch (I think this can be scrapped)
 
-This three properties are hashed and result on an `ipfs` link with character attributes:
+The hash of this three properties are key to get an `ipfs` link with character attributes:
 
 ```json
 {
@@ -41,11 +41,24 @@ Characters move to a new civilization when:
 
 ### Defensive Gear
 
-To be implemented.
+It has the properties:
+
+- prop 1
+
+- prop 2
+
+The metadata of defensive equipment consists of:
+
+```json
+{
+  "health": +200,
+  "armor": +3
+}
+```
 
 ### Offensive Gear
 
-To be implemented.
+Idem description as Offensive Gear
 
 ### Misc
 
