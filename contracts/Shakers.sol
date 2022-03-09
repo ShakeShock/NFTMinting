@@ -81,11 +81,11 @@ contract Shaker is ERC721, Ownable {
         ids += 1;
     }
 
-    function tokenURI(uint id) public view virtual override returns (string memory) {
+    function tokenURI(uint tokenId) public view virtual override returns (string memory) {
         address sender = _msgSender();
-        require(balanceOf(sender) > 0, "Player does not own a Shaker");
+        require(_exists(tokenId), "Player does not own a Shaker");
 
-        Shaker memory playerShaker = _shakers[id];
+        Shaker memory playerShaker = _shakers[tokenId];
         return string(abi.encodePacked(_baseURI(), getShakerMetadataLink(playerShaker)));
     }
 
@@ -99,8 +99,7 @@ contract Shaker is ERC721, Ownable {
         bytes32 shakerHash = getShakerHash(_level, _civilization, _class);
         
         // Need to verifiy if that combination does exists!
-        require (
-            keccak256(abi.encode(_metadata[shakerHash])) != keccak256(abi.encode("")),
+        require(!_metadata[shakerHash].empty(),
             "Not valid combination of Shaker properties"
         );
 
@@ -128,8 +127,6 @@ contract Shaker is ERC721, Ownable {
        _metadata[shakerHash] = _link;
     }
 
-
-
     // Increase shaker level, which means it has a new link in ipfs
     // If invalid level revert
     function levelUpShaker() external {}
@@ -137,7 +134,6 @@ contract Shaker is ERC721, Ownable {
     // Change Shaker civilization, (new ipfs link)
     // If cannot change, revert
     function changeShakerCivilization() private {}
-
 
     // Upgrade stage, (new ipfs link)
     // If cannot further advance then revert
