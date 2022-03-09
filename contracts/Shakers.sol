@@ -49,11 +49,10 @@ contract Shaker is ERC721, Ownable {
         }
     }
 
-    function mintShaker(uint32 shakerType) external payable {
+    function mintShaker(uint32 shakerType) external payable  {
         require(shakerType <= 2, "Invalid shaker type");
 
-        address sender = _msgSender();
-        require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");         
+        // require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");
 
         if (msg.value == 0){
             if (shakerType == 0){
@@ -77,15 +76,14 @@ contract Shaker is ERC721, Ownable {
                 require(msg.value > 0.06 ether, "Insuficient funds");
         }
 
-        _safeMint(sender, ids);
+        _safeMint(_msgSender(), ids);
         _shakers[ids] = primitiveShaker();
 
         ids += 1;
     }
 
     function tokenURI(uint tokenId) public view virtual override returns (string memory) {
-        address sender = _msgSender();
-        require(_exists(tokenId), "Player does not own a Shaker");
+        require(_exists(tokenId), "URI query for non existing token");
 
         Shaker memory playerShaker = _shakers[tokenId];
         return string(abi.encodePacked(_baseURI(), getShakerMetadataLink(playerShaker)));
@@ -145,6 +143,16 @@ contract Shaker is ERC721, Ownable {
     // Set how much it is possible to free mint again
     function setFreeMinting(uint32 shakerType) public onlyOwner {}
 
+    function _mint(address to, uint256 tokenId) 
+    internal virtual override canHaveShaker(to) {
+        super._mint(to, tokenId);
+    }
+
+    function _transfer(address from, address to, uint256 tokenId) 
+    internal virtual override canHaveShaker(to) {
+        super._transfer(from, to, tokenId);
+    }
+
     function _baseURI() internal pure override returns (string memory) {
         return "ipfs://";
     }
@@ -161,6 +169,11 @@ contract Shaker is ERC721, Ownable {
             civilization: 0,
             class: 0
         });
+    }
+
+    modifier canHaveShaker(address addr){
+        require(balanceOf(addr) <= MAX_SHAKERS, "Address has already maximum number of shakers");
+        _;
     }
 
     modifier validURI(string memory _link) {
