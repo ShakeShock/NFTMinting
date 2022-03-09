@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
- import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
- import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 // import "hardhat/console.sol";
 import "./tools/StringTools.sol";
 
@@ -27,6 +27,8 @@ contract Shaker is ERC721, Ownable {
     mapping(uint => Shaker) private _shakers;
     // Shaker Properties Hast to URI
     mapping(bytes32 => string) private _metadata;
+
+    event URIChanged(bytes32 indexed);
 
     constructor(
         uint16[] memory _level,
@@ -111,10 +113,10 @@ contract Shaker is ERC721, Ownable {
     ) external onlyOwner validURI(_link){
 
         bytes32 shakerHash = getShakerHash(_level, _civilization, _class);
-        string memory uri = _metadata[shakerHash];
-         require(!uri.empty(), "There is already a link for this shaker");
+        require(!_metadata[shakerHash].empty(), "There is already a link for this shaker");
 
        _metadata[shakerHash] = _link;
+       emit URIChanged(shakerHash);
     }
 
     function overwriteShakerMetadataLink(
@@ -125,6 +127,7 @@ contract Shaker is ERC721, Ownable {
         require(!_metadata[shakerHash].empty(), "There is no link to override for this shaker");
 
        _metadata[shakerHash] = _link;
+       emit URIChanged(shakerHash);
     }
 
     // Increase shaker level, which means it has a new link in ipfs
