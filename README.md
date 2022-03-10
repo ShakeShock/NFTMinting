@@ -14,7 +14,6 @@ It has the properties:
 
 - `level` a `uint16` which represents character level (from 0 to 3)
 - `civilization` a `uint8` which represents the civilization it belongs
-- `stage` a `uint8` which represents current time epoch (I think this can be scrapped)
 
 The hash of this three properties are key to get an `ipfs` link with character attributes:
 
@@ -23,44 +22,62 @@ The hash of this three properties are key to get an `ipfs` link with character a
   "health": 100,
   "damage": 10,
   "armor": 0,
-  "movement_speed": 1
+  "speed": 1
 }
 ```
 
-Characters can level up when they meet the appropiate requirements which are:
+Characters can level up when they meet the appropiate requirements:
 
-- Certain amount of experience?
+- A minimum level of Experience (XP points)
+- A minimum amount of $SHAKE
 
-Characters can move forward on stage when:
-
-- They have the right level
 
 Characters move to a new civilization when:
 
-- Something Something
+- A minimum level of metadata from character and equipment
+- A minimum amount of $SHAKE
 
 ### Defensive Gear
 
 It has the properties:
 
-- prop 1
+- Can add and/or substrack integers from the character metadata when applied
 
-- prop 2
+- It's not unique. Can exist multiple times and have multiple owners
 
 The metadata of defensive equipment consists of:
 
 ```json
 {
-  "health": +200,
-  "armor": +3
+  "health": +20,
+  "damage": 0,
+  "armor": +20,
+  "speed": +1
 }
 ```
 
 ### Offensive Gear
 
-Idem description as Offensive Gear
+It has the properties:
 
+- Can add and/or substrack integers from the character metadata when applied
+
+- It's not unique. Can exist multiple times and have multiple owners
+
+The metadata of defensive equipment consists of:
+
+```json
+{
+  "health": +20,
+  "damage": +3,
+  "armor": 0,
+  "speed": -1
+}
+```
+```
 ### Misc
+
+Maybe in the future you can also craft the equipment to increase the metadata by exchanging some $SHAKE
 
 Leaving this hardhat stuff here for now:
 
