@@ -23,9 +23,16 @@ contract Shaker is ERC721, Ownable {
         uint8 class;
     }
 
+    // Structure to have possible amount to mint
+    // And its value
+    struct ShakerClass {
+        uint256 amount;
+        uint256 price;
+    }
+
     // Token ID to Shaker
     mapping(uint => Shaker) private _shakers;
-    // Shaker Properties Hast to URI
+    // Shaker Properties Hash to URI
     mapping(bytes32 => string) private _metadata;
 
     event URIChanged(bytes32 indexed);
@@ -130,27 +137,36 @@ contract Shaker is ERC721, Ownable {
 
     // Increase shaker level, which means it has a new link in ipfs
     // If invalid level revert
-    function levelUpShaker() external {}
+    function levelUpShaker(address _player, uint16 level) external onlyOwner hasShaker(_player) {
+        Shaker storage playerShaker = _shakers[_player];
+        playerShaker.level = level;
+
+        require(!getShakerMetadataLink(playerShaker).empty(),
+                "Undefined Shaker properties");
+    }
 
     // Change Shaker civilization, (new ipfs link)
     // If cannot change, revert
-    function changeShakerCivilization() private {}
+    function changeShakerCivilization(address _player, uint8 civilization) 
+    external onlyOwner  hasShaker(_player){
+        Shaker storage playerShaker = _shakers[_player];
+        playerShaker.civilization = civilization;
 
-    // Upgrade stage, (new ipfs link)
-    // If cannot further advance then revert
-    function increaseShakerStage() private {}
+        require(!getShakerMetadataLink(playerShaker).empty(),
+                "Undefined Shaker properties");
+    }
 
     // Set how much it is possible to free mint again
     function setFreeMinting(uint32 shakerType) public onlyOwner {}
 
-    function _mint(address to, uint256 tokenId) 
-    internal virtual override canHaveShaker(to) {
-        super._mint(to, tokenId);
+    function _mint(address _to, uint256 _tokenId) 
+    internal virtual override canHaveShaker(_to) {
+        super._mint(_to, _tokenId);
     }
 
-    function _transfer(address from, address to, uint256 tokenId) 
-    internal virtual override canHaveShaker(to) {
-        super._transfer(from, to, tokenId);
+    function _transfer(address _from, address _to, uint256 _tokenId) 
+    internal virtual override canHaveShaker(_to) {
+        super._transfer(_from, _to, _tokenId);
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -171,8 +187,18 @@ contract Shaker is ERC721, Ownable {
         });
     }
 
-    modifier canHaveShaker(address addr){
-        require(balanceOf(addr) <= MAX_SHAKERS, "Address has already maximum number of shakers");
+    function payOut(address payable _to, uint _transactionGas) public onlyOwner {
+        (bool _sent, bytes memory _data) = _to.call{value: this.balance, gas: transactionGas}(""); 
+        require(_sent, "Pay out did not occurred");
+    }
+
+    modifier canHaveShaker(address _addr){
+        require(balanceOf(_addr) <= MAX_SHAKERS, "Address has already maximum number of shakers");
+        _;
+    }
+
+    modifier hasShaker(address _addr){
+        require(balanceOf(_addr) > 0, "Address has no shaker");
         _;
     }
 
