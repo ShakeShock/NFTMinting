@@ -49,6 +49,10 @@ describe("Shaker Mint", function () {
         .mintShaker(3, { value: ethers.utils.parseEther("0.015") })
     ).to.be.revertedWith("Insuficient funds");
 
+    await expect(shaker.connect(signer2).mintShaker(100)).to.be.revertedWith(
+      "Invalid shaker type"
+    );
+
     shaker
       .connect(signer2)
       .mintShaker(3, { value: ethers.utils.parseEther("0.06") });
