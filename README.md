@@ -35,6 +35,12 @@ Characters can level up when they meet the appropiate requirements:
 Characters move to a new civilization when:
 
 - A minimum level of metadata from character and equipment
+ ```json
+{
+ Sum of C,E ("health"+  "damage"+  "armor"+  "speed")/4
+
+}
+```
 - A minimum amount of $SHAKE
 
 ### Defensive Gear
