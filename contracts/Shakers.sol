@@ -47,7 +47,9 @@ contract Shaker is ERC721, Ownable {
     )  ERC721("Shaker", "SKR") {
         // Set values for how many times a class can be minted 
         // and how much user needs to pay 
-        tokenAvailabilty = _mintingValues;
+        for (uint i = 0; i < _mintingValues.length; i++){
+            tokenAvailabilty.push(_mintingValues[i]);
+        }
 
         // Set IPFS location for each shaker type
         for (uint i = 0; i < _level.length; i++){
@@ -56,12 +58,12 @@ contract Shaker is ERC721, Ownable {
         }
     }
 
-    function mintShaker(uint32 shakerType) external payable  {
+    function mintShaker(uint8 shakerType) external payable  {
         require(shakerType < tokenAvailabilty.length, "Invalid shaker type");
 
         ShakerClass storage classAvalability = tokenAvailabilty[shakerType];
         require(classAvalability.amount > 0, "No more minting for type selected");
-        require(classAvalability.value <= msg.value, "Insuficient funds");
+        require(classAvalability.price <= msg.value, "Insuficient funds");
 
         classAvalability.amount -= 1;
 
@@ -119,9 +121,9 @@ contract Shaker is ERC721, Ownable {
 
     // Increase shaker level, which means it has a new link in ipfs
     // If invalid level revert
-    function levelUpShaker(address _player, uint16 level) external onlyOwner hasShaker(_player) {
-        Shaker storage playerShaker = _shakers[_player];
-        playerShaker.level = level;
+    function levelUpShaker(uint _tokenId, uint16 _level) external onlyOwner hasShaker(_tokenId) {
+        Shaker storage playerShaker = _shakers[_tokenId];
+        playerShaker.level = _level;
 
         require(!getShakerMetadataLink(playerShaker).empty(),
                 "Undefined Shaker properties");
@@ -129,20 +131,20 @@ contract Shaker is ERC721, Ownable {
 
     // Change Shaker civilization, (new ipfs link)
     // If cannot change, revert
-    function changeShakerCivilization(address _player, uint8 civilization) 
-    external onlyOwner  hasShaker(_player){
-        Shaker storage playerShaker = _shakers[_player];
-        playerShaker.civilization = civilization;
+    function changeShakerCivilization(uint _tokenId, uint8 _civilization) 
+    external onlyOwner  hasShaker(_tokenId){
+        Shaker storage playerShaker = _shakers[_tokenId];
+        playerShaker.civilization = _civilization;
 
         require(!getShakerMetadataLink(playerShaker).empty(),
                 "Undefined Shaker properties");
     }
 
-    function addNewClass(ShakerClass _sc) external onlyOwner {
+    function addNewClass(ShakerClass memory _sc) external onlyOwner {
         tokenAvailabilty.push(_sc);
     }
 
-    function updateClassValues(uint8 index, ShakerClass values) external onlyOwner {
+    function updateClassValues(uint8 index, ShakerClass calldata values) external onlyOwner {
         ShakerClass storage oldValues = tokenAvailabilty[index];
         oldValues.amount = values.amount;
         oldValues.price = values.price;
@@ -180,7 +182,7 @@ contract Shaker is ERC721, Ownable {
     }
 
     function payOut(address payable _to, uint _transactionGas) public onlyOwner {
-        (bool _sent, bytes memory _data) = _to.call{value: this.balance, gas: transactionGas}(""); 
+        (bool _sent,) = _to.call{value: address(this).balance, gas: _transactionGas}(""); 
         require(_sent, "Pay out did not occurred");
     }
 
@@ -189,8 +191,8 @@ contract Shaker is ERC721, Ownable {
         _;
     }
 
-    modifier hasShaker(address _addr){
-        require(balanceOf(_addr) > 0, "Address has no shaker");
+    modifier hasShaker(uint _tokenId){
+        require(_exists(_tokenId), "Non-existant shaker id");
         _;
     }
 
