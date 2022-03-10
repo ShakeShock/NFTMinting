@@ -66,7 +66,7 @@ contract Shaker is ERC721, Ownable {
         classAvalability.amount -= 1;
 
         _safeMint(_msgSender(), ids);
-        _shakers[ids] = primitiveShaker();
+        _shakers[ids] = primitiveShaker(shakerType);
 
         ids += 1;
     }
@@ -138,6 +138,16 @@ contract Shaker is ERC721, Ownable {
                 "Undefined Shaker properties");
     }
 
+    function addNewClass(ShakerClass _sc) external onlyOwner {
+        tokenAvailabilty.push(_sc);
+    }
+
+    function updateClassValues(uint8 index, ShakerClass values) external onlyOwner {
+        ShakerClass storage oldValues = tokenAvailabilty[index];
+        oldValues.amount = values.amount;
+        oldValues.price = values.price;
+    }
+
     // Set how much it is possible to free mint again
     function setFreeMinting(uint32 shakerType) public onlyOwner {}
 
@@ -161,11 +171,11 @@ contract Shaker is ERC721, Ownable {
         return keccak256(abi.encodePacked(_level, _civilization, _class));
     }
 
-    function primitiveShaker() public pure returns(Shaker memory){
+    function primitiveShaker(uint8 _classType) public pure returns(Shaker memory){
         return Shaker({
             level: 0,
             civilization: 0,
-            class: 0
+            class: _classType
         });
     }
 
