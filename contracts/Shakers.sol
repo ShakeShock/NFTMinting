@@ -29,7 +29,8 @@ contract Shaker is ERC721, Ownable {
         uint256 amount;
         uint256 price;
     }
-
+    // Each token class value and amount for minting
+    ShakerClass[] public tokenAvailabilty;
     // Token ID to Shaker
     mapping(uint => Shaker) private _shakers;
     // Shaker Properties Hash to URI
@@ -42,12 +43,11 @@ contract Shaker is ERC721, Ownable {
         uint8[] memory _civilization,
         uint8[] memory _class,
         string[] memory _links,
-        uint32 maxFreeMinting
+        ShakerClass[] memory _mintingValues
     )  ERC721("Shaker", "SKR") {
-        // Set free minting
-        type1Free = maxFreeMinting * 70 / 100;
-        type2Free = maxFreeMinting * 20 / 100;
-        type3Free = maxFreeMinting * 10 / 100;
+        // Set values for how many times a class can be minted 
+        // and how much user needs to pay 
+        tokenAvailabilty = _mintingValues;
 
         // Set IPFS location for each shaker type
         for (uint i = 0; i < _level.length; i++){
@@ -57,31 +57,13 @@ contract Shaker is ERC721, Ownable {
     }
 
     function mintShaker(uint32 shakerType) external payable  {
-        require(shakerType <= 2, "Invalid shaker type");
+        require(shakerType < tokenAvailabilty.length, "Invalid shaker type");
 
-        // require(balanceOf(sender) < MAX_SHAKERS, "Already owns maximum number of shakers");
+        ShakerClass storage classAvalability = tokenAvailabilty[shakerType];
+        require(classAvalability.amount > 0, "No more minting for type selected");
+        require(classAvalability.value <= msg.value, "Insuficient funds");
 
-        if (msg.value == 0){
-            if (shakerType == 0){
-                require(type1Free > 0, "No more type one free");
-                type1Free -= 1;
-            }
-            if (shakerType == 1){
-                require(type2Free > 0, "No more type two free");
-                type2Free -= 1;
-            }
-            if (shakerType == 2){
-                require(type3Free > 0, "No more type three free");
-                type3Free -= 1;
-            }
-        } else {
-            if (shakerType == 0)
-                require(msg.value > 0.015 ether, "Insuficient funds");
-            if (shakerType == 1)
-                require(msg.value > 0.03 ether, "Insuficient funds");
-            if (shakerType == 2)
-                require(msg.value > 0.06 ether, "Insuficient funds");
-        }
+        classAvalability.amount -= 1;
 
         _safeMint(_msgSender(), ids);
         _shakers[ids] = primitiveShaker();
