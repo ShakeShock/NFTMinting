@@ -11,11 +11,7 @@ contract Shaker is ERC721, Ownable {
 
     uint256 constant MAX_SHAKERS = 1;
 
-    uint256 ids = 0;
-    uint32 public type1Free;
-    uint32 public type2Free;
-    uint32 public type3Free;
-
+    uint256 private _tokenMinted = 0;
     // Pack values in a 32 bit structure
     struct Shaker {
         uint16 level;
@@ -67,10 +63,10 @@ contract Shaker is ERC721, Ownable {
 
         classAvalability.amount -= 1;
 
-        _safeMint(_msgSender(), ids);
-        _shakers[ids] = primitiveShaker(shakerType);
+        _safeMint(_msgSender(), _tokenMinted);
+        _shakers[_tokenMinted] = primitiveShaker(shakerType);
 
-        ids += 1;
+        _tokenMinted += 1;
     }
 
     function tokenURI(uint tokenId) public view virtual override returns (string memory) {
