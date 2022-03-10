@@ -4,6 +4,7 @@ myproject
 /node_modules
 /.idea
 *.tsbuildinfo
+/artifacts
 
 # VS Code workspace config
 workspace.code-workspace
