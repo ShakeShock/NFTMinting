@@ -146,9 +146,6 @@ contract Shaker is ERC721, Ownable {
         oldValues.price = values.price;
     }
 
-    // Set how much it is possible to free mint again
-    function setFreeMinting(uint32 shakerType) public onlyOwner {}
-
     function _mint(address _to, uint256 _tokenId) 
     internal virtual override canHaveShaker(_to) {
         super._mint(_to, _tokenId);
