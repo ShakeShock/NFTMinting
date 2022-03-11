@@ -10,7 +10,7 @@ import "./tools/StringTools.sol";
 abstract contract Gear is ERC721, Ownable {
     using StringTools for string;
 
-    uint256 tokenId;
+    uint256 private _tokenId;
 
     struct Equipment {
         uint256 amount;
@@ -25,7 +25,7 @@ abstract contract Gear is ERC721, Ownable {
     mapping(uint256 => uint256) _equipment;
 
     constructor (string memory name, string memory symbol) ERC721(name, symbol) {
-        tokenId = 0;
+        _tokenId = 0;
     }
 
     // Check if player has the requirements to mint this equipment
