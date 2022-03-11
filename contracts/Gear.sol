@@ -10,6 +10,8 @@ import "./tools/StringTools.sol";
 abstract contract Gear is ERC721, Ownable {
     using StringTools for string;
 
+    uint256 tokenId;
+
     struct Equipment {
         uint256 amount;
         uint256 price;
@@ -22,7 +24,9 @@ abstract contract Gear is ERC721, Ownable {
     // Token Id to equipment type
     mapping(uint256 => uint256) _equipment;
 
-    constructor () ERC721("GEAR", "GR") {}
+    constructor (string memory name, string memory symbol) ERC721(name, symbol) {
+        tokenId = 0;
+    }
 
     // Check if player has the requirements to mint this equipment
     // If yes, handle them the equipment
@@ -34,8 +38,15 @@ abstract contract Gear is ERC721, Ownable {
         );
         require(
             equipmentAvailability[_equipmentType].price <=  msg.value, 
-            "Insuficient fonds for buying this equipment"
+            "Insuficient funds for buying this equipment"
         );
+        
+        _safeMint(_msgSender(), _tokenId);
+        _equipment[_tokenId] = _equipmentType;
+
+        Equipment storage eq = equipmentAvailability[_equipmentType];
+        eq.amount -= 1;
+        _tokenId += 1;
     }
 
     function tokenURI(uint _tokenId) public view virtual override returns (string memory) {
