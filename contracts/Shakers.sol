@@ -180,7 +180,7 @@ contract Shaker is ERC721, Ownable {
     }
 
     modifier canHaveShaker(address _addr){
-        require(balanceOf(_addr) <= MAX_SHAKERS, "Address has already maximum number of shakers");
+        require(balanceOf(_addr) < MAX_SHAKERS, "Address has already maximum number of shakers");
         _;
     }
 
