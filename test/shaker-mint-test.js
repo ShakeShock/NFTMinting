@@ -47,7 +47,7 @@ describe("Shaker Mint", function () {
     );
   });
 
-  it("Should have limited free minting", async function () {
+  it("Should have limited minting", async function () {
     [owner, signer1, signer2, ...addrs] = await ethers.getSigners();
 
     await shaker
