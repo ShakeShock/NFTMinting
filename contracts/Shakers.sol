@@ -54,7 +54,7 @@ contract Shaker is ERC721, Ownable {
         }
     }
 
-    function mintShaker(uint8 shakerType) external payable  {
+    function mintShaker(address account, uint8 shakerType) external payable onlyOwner  {
         require(shakerType < tokenAvailabilty.length, "Invalid shaker type");
 
         ShakerClass storage classAvalability = tokenAvailabilty[shakerType];
@@ -63,7 +63,7 @@ contract Shaker is ERC721, Ownable {
 
         classAvalability.amount -= 1;
 
-        _safeMint(_msgSender(), _tokenMinted);
+        _safeMint(account, _tokenMinted);
         _shakers[_tokenMinted] = primitiveShaker(shakerType);
 
         _tokenMinted += 1;
@@ -119,10 +119,10 @@ contract Shaker is ERC721, Ownable {
     // If invalid level revert
     function levelUpShaker(uint _tokenId, uint16 _level) external onlyOwner hasShaker(_tokenId) {
         Shaker storage playerShaker = _shakers[_tokenId];
-        playerShaker.level = _level;
-
         require(!getShakerMetadataLink(playerShaker).empty(),
                 "Undefined Shaker properties");
+
+        playerShaker.level = _level;
     }
 
     // Change Shaker civilization, (new ipfs link)
@@ -130,10 +130,10 @@ contract Shaker is ERC721, Ownable {
     function changeShakerCivilization(uint _tokenId, uint8 _civilization) 
     external onlyOwner  hasShaker(_tokenId){
         Shaker storage playerShaker = _shakers[_tokenId];
-        playerShaker.civilization = _civilization;
-
         require(!getShakerMetadataLink(playerShaker).empty(),
                 "Undefined Shaker properties");
+
+        playerShaker.civilization = _civilization;
     }
 
     function addNewClass(ShakerClass memory _sc) external onlyOwner {

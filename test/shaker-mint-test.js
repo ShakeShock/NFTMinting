@@ -2,7 +2,6 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Shaker Mint", function () {
-  const freeSupply = 10;
   let shaker;
   let stringTools;
 
@@ -40,9 +39,9 @@ describe("Shaker Mint", function () {
 
   it("Should mint a character only once", async function () {
     [owner, signer1, ...addrs] = await ethers.getSigners();
-    await shaker.connect(signer1).mintShaker(0);
+    await shaker.mintShaker(signer1.address, 0);
 
-    await expect(shaker.connect(signer1).mintShaker(0)).to.be.revertedWith(
+    await expect(shaker.mintShaker(signer1.address, 0)).to.be.revertedWith(
       "Address has already maximum number of shakers"
     );
   });
@@ -50,25 +49,26 @@ describe("Shaker Mint", function () {
   it("Should have limited minting", async function () {
     [owner, signer1, signer2, ...addrs] = await ethers.getSigners();
 
-    await shaker
-      .connect(signer1)
-      .mintShaker(2, { value: ethers.utils.parseEther("0.06") });
-    await expect(shaker.connect(signer2).mintShaker(2)).to.be.revertedWith(
+    await shaker.mintShaker(signer1.address, 2, {
+      value: ethers.utils.parseEther("0.06"),
+    });
+
+    await expect(shaker.mintShaker(signer2.address, 2)).to.be.revertedWith(
       "No more minting for type selected"
     );
 
     await expect(
-      shaker
-        .connect(signer2)
-        .mintShaker(1, { value: ethers.utils.parseEther("0.015") })
+      shaker.mintShaker(signer2.address, 1, {
+        value: ethers.utils.parseEther("0.015"),
+      })
     ).to.be.revertedWith("Insuficient funds");
 
-    await expect(shaker.connect(signer2).mintShaker(100)).to.be.revertedWith(
+    await expect(shaker.mintShaker(signer2.address, 100)).to.be.revertedWith(
       "Invalid shaker type"
     );
 
-    shaker
-      .connect(signer2)
-      .mintShaker(1, { value: ethers.utils.parseEther("0.03") });
+    await shaker.mintShaker(signer2.address, 1, {
+      value: ethers.utils.parseEther("0.03"),
+    });
   });
 });
