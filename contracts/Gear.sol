@@ -24,24 +24,36 @@ abstract contract Gear is ERC721, Ownable {
     // Token Id to equipment type
     mapping(uint256 => uint256) _equipment;
 
-    constructor (string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor (
+        uint[] memory _amount,
+        uint[] memory _price,
+        string[] memory _uris,
+        string memory _name,
+        string memory _symbol)
+    ERC721(_name, _symbol) {
+        for (uint i = 0; i < _amount.length; i++){
+           equipmentAvailability.push(
+               Equipment({amount: _amount[i], price: _price[i]})
+           );
+           _equipmentURI.push(_uris[i]);
+        }
         _tokenId = 0;
     }
 
     // Check if player has the requirements to mint this equipment
     // If yes, handle them the equipment
-    function mintEquipment(uint _equipmentType) external payable {
+    function mintEquipment(address account ,uint _equipmentType) external payable onlyOwner {
         require(_equipmentType < equipmentAvailability.length, "Invalid equipment type"); 
         require(
             equipmentAvailability[_equipmentType].amount > 0, 
-            "No more equipmente of this type available for minting"
+            "No more equipment of this type available for minting"
         );
         require(
             equipmentAvailability[_equipmentType].price <=  msg.value, 
             "Insuficient funds for buying this equipment"
         );
         
-        _safeMint(_msgSender(), _tokenId);
+        _safeMint(account, _tokenId);
         _equipment[_tokenId] = _equipmentType;
 
         Equipment storage eq = equipmentAvailability[_equipmentType];
